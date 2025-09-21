@@ -15,12 +15,21 @@ cancel_kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='❌ Отмена', callback_data='cancel_action')]
 ])
 
-# Клавиатура для подтверждения замены пароля
-replace_confirm_kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text="✅ Да, заменить",
-                          callback_data="confirm_replace_new")],
-    [InlineKeyboardButton(text="❌ Нет, отменить",
-                          callback_data="cancel_action")]
+# Клавиатура для генерации пароля
+generate_password_kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='🎲 Сгенерировать пароль',
+                          callback_data='generate_password')],
+    [InlineKeyboardButton(text='❌ Отмена', callback_data='cancel_action')]
+])
+
+# Клавиатура для подтверждения использования сгенерированного пароля
+confirm_generated_password_kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='✅ Использовать этот пароль',
+                          callback_data='use_generated_password')],
+    [InlineKeyboardButton(text='🔄 Сгенерировать другой',
+                          callback_data='generate_another_password')],
+    [InlineKeyboardButton(text='📝 Ввести свой пароль',
+                          callback_data='enter_own_password')]
 ])
 
 

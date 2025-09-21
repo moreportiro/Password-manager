@@ -1,3 +1,5 @@
 python -m venv .venv
 .venv\Scripts\activate
+
+pip install sqlalchemy aiosqlite # sqlalchemy - фреймворк SQLite, aiosqlite - асинхронно использовать субд
 pip list
