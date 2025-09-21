@@ -25,6 +25,7 @@ class Password(Base):  # таблица паролей юзеров
     id: Mapped[int] = mapped_column(primary_key=True)
     site: Mapped[str] = mapped_column()
     password: Mapped[str] = mapped_column()
+    login: Mapped[str] = mapped_column()
     link: Mapped[int] = mapped_column(ForeignKey('users.id'))
 
 

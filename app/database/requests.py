@@ -25,10 +25,11 @@ async def get_password_by_id(password_id):
         return await session.scalar(select(Password).where(Password.id == password_id))
 
 
-async def add_password(user_id, site, password):
+async def add_password(user_id, site, login, password):
     async with async_session() as session:
         new_password = Password(
             site=site,
+            login=login,
             password=password,
             link=user_id
         )

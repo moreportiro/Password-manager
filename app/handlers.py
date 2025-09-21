@@ -15,6 +15,7 @@ router = Router()
 
 class AddPassword(StatesGroup):
     site = State()
+    login = State()
     password = State()
 
 
@@ -46,6 +47,7 @@ async def password(callback: CallbackQuery):
         if password_obj:
             await callback.message.edit_text(
                 f"🔐 Пароль для <b>{password_obj.site}</b>:\n\n"
+                f"👤 Логин: <b>{password_obj.login}</b>\n"
                 f"🔑 Пароль: <b>{password_obj.password}</b>\n\n"
                 f"⚠️ Не делитесь этим паролем ни с кем!",
                 parse_mode='HTML',
@@ -90,7 +92,6 @@ async def no_passwords(callback: CallbackQuery):
 
 
 @router.callback_query(F.data == "add_password")
-@router.callback_query(F.data == "add_password")
 async def add_password_start(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
         "Введите название сайта или сервиса:",
@@ -118,6 +119,18 @@ async def cancel_action(callback: CallbackQuery, state: FSMContext):
 async def add_site(message: Message, state: FSMContext):
     await state.update_data(site=message.text)
     await message.answer(
+        "Введите логин или email:",
+        reply_markup=kb.cancel_kb
+    )
+    await state.set_state(AddPassword.login)
+
+# Обработка ввода логина
+
+
+@router.message(AddPassword.login)
+async def add_login(message: Message, state: FSMContext):
+    await state.update_data(login=message.text)
+    await message.answer(
         "Введите пароль:",
         reply_markup=kb.cancel_kb
     )
@@ -133,7 +146,7 @@ async def add_password_final(message: Message, state: FSMContext):
     await state.clear()
 
     user = await rq.set_user(message.from_user.id)
-    await rq.add_password(user.id, data['site'], data['password'])
+    await rq.add_password(user.id, data['site'], data['login'], data['password'])
 
     await message.answer(
         f"✅ Пароль для <b>{data['site']}</b> успешно добавлен!",
