@@ -25,6 +25,16 @@ async def get_password_by_id(password_id):
         return await session.scalar(select(Password).where(Password.id == password_id))
 
 
+async def get_password_by_site(user_id, site):
+    async with async_session() as session:
+        return await session.scalar(
+            select(Password).where(
+                Password.link == user_id,
+                Password.site == site
+            )
+        )
+
+
 async def add_password(user_id, site, login, password):
     async with async_session() as session:
         new_password = Password(
@@ -38,18 +48,16 @@ async def add_password(user_id, site, login, password):
         return new_password
 
 
-async def update_password(user_id, site, login, password):
+async def update_password(password_id, site, login, password):
     async with async_session() as session:
         # Находим существующий пароль
         existing_password = await session.scalar(
-            select(Password).where(
-                Password.link == user_id,
-                Password.site == site
-            )
+            select(Password).where(Password.id == password_id)
         )
 
         if existing_password:
             # Обновляем данные
+            existing_password.site = site
             existing_password.login = login
             existing_password.password = password
             await session.commit()

@@ -18,9 +18,9 @@ cancel_kb = InlineKeyboardMarkup(inline_keyboard=[
 # Клавиатура для подтверждения замены пароля
 replace_confirm_kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text="✅ Да, заменить",
-                          callback_data="confirm_replace")],
+                          callback_data="confirm_replace_new")],
     [InlineKeyboardButton(text="❌ Нет, отменить",
-                          callback_data="cancel_replace")]
+                          callback_data="cancel_action")]
 ])
 
 

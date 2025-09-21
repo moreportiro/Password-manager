@@ -25,6 +25,10 @@ async def validate_site(message: Message, state: FSMContext) -> bool:
 async def validate_login(message: Message, state: FSMContext) -> bool:
     login = message.text.strip()
 
+    # Пропускаем проверку для команды /skip
+    if message.text == "/skip":
+        return True
+
     if not login:
         await message.answer("❌ Логин не может быть пустым. Попробуйте еще раз:")
         return False
@@ -56,6 +60,5 @@ async def validate_password(message: Message, state: FSMContext) -> bool:
         await message.answer("❌ Пароль слишком длинный (макс. 100 символов). Попробуйте еще раз:")
         return False
 
-    # Сохраняем пароль в состоянии
     await state.update_data(password=password)
     return True

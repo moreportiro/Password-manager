@@ -21,6 +21,10 @@ class AddPassword(StatesGroup):
 
 
 class ReplacePassword(StatesGroup):
+    site = State()
+    login = State()
+    password = State()
+    target_password_id = State()
     confirmation = State()
 
 
@@ -58,6 +62,8 @@ async def password(callback: CallbackQuery):
                 parse_mode='HTML',
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(
+                        text="🔄 Заменить пароль", callback_data=f"start_replace_{password_obj.id}")],
+                    [InlineKeyboardButton(
                         text="↩️ Назад к списку", callback_data="back_to_passwords")],
                     [InlineKeyboardButton(
                         text="🏠 На главную", callback_data="to_main")]
@@ -83,7 +89,7 @@ async def back_to_passwords(callback: CallbackQuery):
 @router.callback_query(F.data == "to_main")
 async def to_main(callback: CallbackQuery):
     await callback.message.edit_text(
-        "🔐 Менеджер паролей [beta]\n\n"
+        "🔐 Менеджер паролей\n\n"
         "Выберите действие:",
         reply_markup=kb.main_inline
     )
@@ -160,18 +166,16 @@ async def add_password_final(message: Message, state: FSMContext):
                 password=message.text
             )
 
-            # Переходим в состояние подтверждения замены
-            await state.set_state(ReplacePassword.confirmation)
-
+            # Спрашиваем подтверждение замены
             await message.answer(
                 f"❌ Пароль для <b>{data['site']}</b> уже существует.\n"
                 "Хотите заменить его?",
                 parse_mode='HTML',
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(
-                        text="✅ Да, заменить", callback_data="confirm_replace")],
+                        text="✅ Да, заменить", callback_data="confirm_replace_new")],
                     [InlineKeyboardButton(
-                        text="❌ Нет, отменить", callback_data="cancel_replace")]
+                        text="❌ Нет, отменить", callback_data="cancel_action")]
                 ])
             )
             return
@@ -185,6 +189,174 @@ async def add_password_final(message: Message, state: FSMContext):
             parse_mode='HTML',
             reply_markup=kb.main_inline
         )
+
+# Обработка подтверждения замены пароля (при добавлении нового)
+
+
+@router.callback_query(F.data == "confirm_replace_new")
+async def confirm_replace_new_password(callback: CallbackQuery, state: FSMContext):
+    try:
+        # Получаем данные из состояния AddPassword
+        data = await state.get_data()
+        user = await rq.set_user(callback.from_user.id)
+
+        # Находим существующий пароль для замены
+        existing_password = await rq.get_password_by_site(user.id, data['site'])
+
+        if existing_password:
+            # Обновляем существующий пароль
+            success = await rq.update_password(
+                existing_password.id,
+                data['site'],
+                data['login'],
+                data['password']
+            )
+
+            if success:
+                await callback.message.edit_text(
+                    f"✅ Пароль для <b>{data['site']}</b> успешно обновлен!",
+                    parse_mode='HTML'
+                )
+            else:
+                await callback.message.edit_text(
+                    "❌ Произошла ошибка при обновлении пароля."
+                )
+        else:
+            await callback.message.edit_text(
+                "❌ Пароль для замены не найден."
+            )
+
+        await state.clear()
+        await callback.answer()
+
+        # Показываем главное меню
+        await callback.message.answer(
+            "Главное меню:",
+            reply_markup=kb.main_inline
+        )
+    except Exception as e:
+        print(f"Error replacing password: {e}")
+        await callback.answer("❌ Ошибка при замене пароля", show_alert=True)
+
+# Обработка отмены замены пароля
+
+
+@router.callback_query(F.data == "cancel_action")
+async def cancel_action(callback: CallbackQuery, state: FSMContext):
+    await state.clear()
+    await callback.message.edit_text(
+        "❌ Действие отменено."
+    )
+    await callback.answer()
+
+    # Показываем главное меню
+    await callback.message.answer(
+        "Главное меню:",
+        reply_markup=kb.main_inline
+    )
+
+# Начало процесса замены пароля (из окна просмотра)
+
+
+@router.callback_query(F.data.startswith('start_replace_'))
+async def start_replace_password(callback: CallbackQuery, state: FSMContext):
+    try:
+        password_id = int(callback.data.split('_')[2])
+        password_obj = await rq.get_password_by_id(password_id)
+
+        if password_obj:
+            # Сохраняем ID пароля для замены
+            await state.update_data(
+                target_password_id=password_obj.id,
+                site=password_obj.site,
+                login=password_obj.login
+            )
+
+            # Переходим к процессу замены пароля
+            await callback.message.edit_text(
+                f"🔄 Замена пароля для <b>{password_obj.site}</b>\n\n"
+                f"Текущий логин: <b>{password_obj.login}</b>\n\n"
+                "Введите новый логин (или нажмите /skip чтобы оставить текущий):",
+                parse_mode='HTML',
+                reply_markup=kb.cancel_kb
+            )
+            await state.set_state(ReplacePassword.login)
+            await callback.answer()
+        else:
+            await callback.answer("❌ Пароль не найден", show_alert=True)
+    except Exception as e:
+        print(f"Error starting password replacement: {e}")
+        await callback.answer("❌ Ошибка при начале замены пароля", show_alert=True)
+
+# Обработка ввода нового логина при замене пароля
+
+
+@router.message(ReplacePassword.login)
+async def replace_login(message: Message, state: FSMContext):
+    if message.text == "/skip":
+        # Пропускаем изменение логина, оставляем текущий
+        data = await state.get_data()
+        await state.update_data(login=data['login'])
+
+        await message.answer(
+            "Введите новый пароль:",
+            reply_markup=kb.cancel_kb
+        )
+        await state.set_state(ReplacePassword.password)
+    elif await validate_login(message, state):
+        await message.answer(
+            "Введите новый пароль:",
+            reply_markup=kb.cancel_kb
+        )
+        await state.set_state(ReplacePassword.password)
+
+# Обработка ввода нового пароля и завершение замены
+
+
+@router.message(ReplacePassword.password)
+async def replace_password_final(message: Message, state: FSMContext):
+    if await validate_password(message, state):
+        data = await state.get_data()
+
+        # Обновляем пароль
+        success = await rq.update_password(
+            data['target_password_id'],
+            data['site'],
+            data['login'],
+            message.text
+        )
+
+        await state.clear()
+
+        if success:
+            await message.answer(
+                f"✅ Пароль для <b>{data['site']}</b> успешно обновлен!",
+                parse_mode='HTML',
+                reply_markup=kb.main_inline
+            )
+        else:
+            await message.answer(
+                "❌ Произошла ошибка при обновлении пароля.",
+                reply_markup=kb.main_inline
+            )
+
+# Обработка отмены замены пароля
+
+
+@router.callback_query(F.data == "cancel_action", ReplacePassword.login)
+@router.callback_query(F.data == "cancel_action", ReplacePassword.password)
+async def cancel_replace_password(callback: CallbackQuery, state: FSMContext):
+    await state.clear()
+    await callback.message.edit_text(
+        "❌ Замена пароля отменена."
+    )
+    await callback.answer()
+
+    # Показываем главное меню
+    await callback.message.answer(
+        "Главное меню:",
+        reply_markup=kb.main_inline
+    )
 
 # Обработка подтверждения замены пароля
 
