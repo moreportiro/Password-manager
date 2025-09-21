@@ -15,6 +15,14 @@ cancel_kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='❌ Отмена', callback_data='cancel_action')]
 ])
 
+# Клавиатура для подтверждения замены пароля
+replace_confirm_kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="✅ Да, заменить",
+                          callback_data="confirm_replace")],
+    [InlineKeyboardButton(text="❌ Нет, отменить",
+                          callback_data="cancel_replace")]
+])
+
 
 async def passwords(user_id):
     try:

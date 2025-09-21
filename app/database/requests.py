@@ -1,6 +1,6 @@
 from app.database.models import async_session
 from app.database.models import User, Password
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 
 
 async def set_user(tg_id):
@@ -38,6 +38,25 @@ async def add_password(user_id, site, login, password):
         return new_password
 
 
+async def update_password(user_id, site, login, password):
+    async with async_session() as session:
+        # Находим существующий пароль
+        existing_password = await session.scalar(
+            select(Password).where(
+                Password.link == user_id,
+                Password.site == site
+            )
+        )
+
+        if existing_password:
+            # Обновляем данные
+            existing_password.login = login
+            existing_password.password = password
+            await session.commit()
+            return True
+        return False
+
+
 async def delete_password(password_id):
     async with async_session() as session:
         password = await session.scalar(select(Password).where(Password.id == password_id))
@@ -46,3 +65,14 @@ async def delete_password(password_id):
             await session.commit()
             return True
         return False
+
+
+async def check_password_exists(user_id, site):
+    async with async_session() as session:
+        existing = await session.scalar(
+            select(Password).where(
+                Password.link == user_id,
+                Password.site == site
+            )
+        )
+        return existing is not None
