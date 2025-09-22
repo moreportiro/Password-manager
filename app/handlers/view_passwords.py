@@ -1,6 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+import html
 
 import app.keyboard as kb
 import app.database.requests as rq
@@ -24,10 +25,15 @@ async def password(callback: CallbackQuery):
         password_obj = await rq.get_password_by_id(password_id)
 
         if password_obj:
+            # Экранируем специальные HTML-символы
+            escaped_site = html.escape(password_obj.site)
+            escaped_login = html.escape(password_obj.login)
+            escaped_password = html.escape(password_obj.password)
+
             await callback.message.edit_text(
-                f"🔐 Пароль для <b>{password_obj.site}</b>:\n\n"
-                f"👤 Логин: <b>{password_obj.login}</b>\n"
-                f"🔑 Пароль: <b>{password_obj.password}</b>\n\n"
+                f"🔐 Пароль для <b>{escaped_site}</b>:\n\n"
+                f"👤 Логин: <b>{escaped_login}</b>\n"
+                f"🔑 Пароль: <b>{escaped_password}</b>\n\n"
                 f"⚠️ Не делитесь этим паролем ни с кем!",
                 parse_mode='HTML',
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[

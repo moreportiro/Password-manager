@@ -1,7 +1,15 @@
 import asyncio
 from aiogram import Bot, Dispatcher
 from app.handlers import router
+from aiogram.types import BotCommand
 from app.database.models import async_main
+
+
+async def set_bot_commands(bot: Bot):
+    commands = [
+        BotCommand(command="/start", description="Запустить бота")
+    ]
+    await bot.set_my_commands(commands)
 
 
 async def main():
@@ -9,6 +17,7 @@ async def main():
     # подключение бота
     bot = Bot(token='8215499307:AAGDgFRBN_F8Tk8gw3v01AT-AMdBNUJgWzA')
     dp = Dispatcher()  # обработчик
+    await set_bot_commands(bot)
     dp.include_router(router)
     await dp.start_polling(bot)  # мониторит обновление бота
 
