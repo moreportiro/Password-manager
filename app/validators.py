@@ -14,9 +14,10 @@ async def validate_site(message: Message, state: FSMContext) -> bool:
         )
         return False
 
-    if len(site) > 100:
+    # Увеличиваем лимит для зашифрованных данных
+    if len(site) > 150:
         await message.answer(
-            "❌ Название сайта слишком длинное (макс. 100 символов). Попробуйте еще раз:",
+            "❌ Название сайта слишком длинное (макс. 150 символов). Попробуйте еще раз:",
             reply_markup=kb.cancel_kb
         )
         return False
@@ -46,9 +47,10 @@ async def validate_login(message: Message, state: FSMContext) -> bool:
         )
         return False
 
-    if len(login) > 150:
+    # Увеличиваем лимит для зашифрованных данных
+    if len(login) > 200:
         await message.answer(
-            "❌ Логин слишком длинный (макс. 150 символов). Попробуйте еще раз:",
+            "❌ Логин слишком длинный (макс. 200 символов). Попробуйте еще раз:",
             reply_markup=kb.cancel_kb
         )
         return False
@@ -81,9 +83,10 @@ async def validate_password(message: Message, state: FSMContext) -> bool:
         )
         return False
 
-    if len(password) > 100:
+    # Увеличиваем лимит для зашифрованных данных
+    if len(password) > 150:
         await message.answer(
-            "❌ Пароль слишком длинный (макс. 100 символов). Попробуйте еще раз:",
+            "❌ Пароль слишком длинный (макс. 150 символов). Попробуйте еще раз:",
             reply_markup=kb.cancel_kb
         )
         return False

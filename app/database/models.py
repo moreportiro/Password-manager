@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, ForeignKey
+from sqlalchemy import BigInteger, ForeignKey, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
 
@@ -23,9 +23,12 @@ class Password(Base):  # таблица паролей юзеров
     __tablename__ = 'passwords'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    site: Mapped[str] = mapped_column()
-    password: Mapped[str] = mapped_column()
-    login: Mapped[str] = mapped_column()
+    # Увеличиваем размер для зашифрованных данных
+    site: Mapped[str] = mapped_column(Text)
+    # Увеличиваем размер для зашифрованных данных
+    password: Mapped[str] = mapped_column(Text)
+    # Увеличиваем размер для зашифрованных данных
+    login: Mapped[str] = mapped_column(Text)
     link: Mapped[int] = mapped_column(ForeignKey('users.id'))
 
 
