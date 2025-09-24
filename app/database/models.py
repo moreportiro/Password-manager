@@ -17,6 +17,7 @@ class User(Base):  # таблица юзеров
 
     id: Mapped[int] = mapped_column(primary_key=True)
     tg_id = mapped_column(BigInteger)
+    master_password_hash: Mapped[str] = mapped_column(Text, nullable=True)
 
 
 class Password(Base):  # таблица паролей юзеров

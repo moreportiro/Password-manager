@@ -14,7 +14,12 @@ main_inline = InlineKeyboardMarkup(inline_keyboard=[
 cancel_kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='❌ Отмена', callback_data='cancel_action')]
 ])
-
+# Клавиатура для отмены действия с кнопкой сброса мастер-пароля
+cancel_with_reset_kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='❌ Отмена', callback_data='cancel_action')],
+    [InlineKeyboardButton(text='🔄 Забыли пароль?',
+                          callback_data='reset_master_password')]
+])
 # Клавиатура для генерации пароля
 generate_password_kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🎲 Сгенерировать пароль',

@@ -14,7 +14,6 @@ async def validate_site(message: Message, state: FSMContext) -> bool:
         )
         return False
 
-    # Увеличиваем лимит для зашифрованных данных
     if len(site) > 150:
         await message.answer(
             "❌ Название сайта слишком длинное (макс. 150 символов). Попробуйте еще раз:",
@@ -34,7 +33,6 @@ async def validate_site(message: Message, state: FSMContext) -> bool:
 
 
 async def validate_login(message: Message, state: FSMContext) -> bool:
-    # Пропускаем проверку для команды /skip
     if message.text == "/skip":
         return True
 
@@ -47,7 +45,6 @@ async def validate_login(message: Message, state: FSMContext) -> bool:
         )
         return False
 
-    # Увеличиваем лимит для зашифрованных данных
     if len(login) > 200:
         await message.answer(
             "❌ Логин слишком длинный (макс. 200 символов). Попробуйте еще раз:",
@@ -83,7 +80,6 @@ async def validate_password(message: Message, state: FSMContext) -> bool:
         )
         return False
 
-    # Увеличиваем лимит для зашифрованных данных
     if len(password) > 150:
         await message.answer(
             "❌ Пароль слишком длинный (макс. 150 символов). Попробуйте еще раз:",
@@ -93,3 +89,39 @@ async def validate_password(message: Message, state: FSMContext) -> bool:
 
     await state.update_data(password=password)
     return True
+
+
+async def validate_master_password(password: str) -> tuple[bool, str]:
+    """
+    Валидация мастер-пароля по требованиям Яндекса:
+    - Минимум 8 символов
+    - Обязательно буквы и цифры
+    - Желательно спецсимволы
+    """
+    if len(password) < 8:
+        return False, "❌ Мастер-пароль должен содержать минимум 8 символов"
+
+    if len(password) > 128:
+        return False, "❌ Мастер-пароль слишком длинный (макс. 128 символов)"
+
+    # проверка букв
+    if not re.search(r'[a-zA-Zа-яА-Я]', password):
+        return False, "❌ Мастер-пароль должен содержать буквы"
+
+    # проверка цифр
+    if not re.search(r'[0-9]', password):
+        return False, "❌ Мастер-пароль должен содержать цифры"
+
+    # хотя бы один спецсимвол
+    has_special = re.search(
+        r'[!@#$%^&*()_+\-=\[\]{};\':\"\|,.<>/?`~]', password)
+
+    if not has_special:
+        # если нет спецсимволов, требует смешанный регистр для компенсации
+        has_upper = re.search(r'[A-ZА-Я]', password)
+        has_lower = re.search(r'[a-zа-я]', password)
+
+        if not (has_upper and has_lower):
+            return False, "❌ Мастер-пароль должен содержать буквы разного регистра или спецсимволы\n"
+
+    return True, "✅ Мастер-пароль соответствует требованиям безопасности\n"
