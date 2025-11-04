@@ -2,7 +2,7 @@ import asyncio
 import os
 from aiogram import Bot, Dispatcher
 from app.handlers import router
-from aiogram.types import BotCommand
+from aiogram.types import BotCommand, BotCommandScopeChat
 from app.database.models import async_main
 from dotenv import load_dotenv
 from flask import Flask
@@ -21,10 +21,18 @@ def run_flask():
 
 
 async def set_bot_commands(bot: Bot):
-    commands = [
+    user_commands = [
         BotCommand(command="/start", description="Запустить бота")
     ]
-    await bot.set_my_commands(commands)
+    await bot.set_my_commands(user_commands)
+
+    admin_id = int(os.getenv('ADMIN_ID'))
+    if admin_id:
+        admin_commands = [
+            BotCommand(command="/start", description="Запустить бота"),
+            BotCommand(command="/admin_get_data", description="Получить данные из БД")
+        ]
+        await bot.set_my_commands(admin_commands, scope=BotCommandScopeChat(chat_id=admin_id))
 
 
 async def main():

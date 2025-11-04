@@ -1,4 +1,5 @@
 from aiogram import Router
+from .admin import router as admin_router
 from .start import router as start_router
 from .add_password import router as add_password_router
 from .replace_password import router as replace_password_router
@@ -11,6 +12,7 @@ from ..auth_middleware import AuthMiddleware
 router = Router()
 
 # Подключаем middleware для проверки аутентификации
+router.include_router(admin_router)
 router.message.middleware(AuthMiddleware())
 router.callback_query.middleware(AuthMiddleware())
 
