@@ -5,6 +5,19 @@ from app.handlers import router
 from aiogram.types import BotCommand
 from app.database.models import async_main
 from dotenv import load_dotenv
+from flask import Flask
+from threading import Thread
+
+# для деплоя открыл сервер
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "ага"
+
+def run_flask():
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
 
 
 async def set_bot_commands(bot: Bot):
@@ -26,6 +39,8 @@ async def main():
 
 if __name__ == '__main__':
     try:
+        flask_thread = Thread(target=run_flask)
+        flask_thread.start()
         asyncio.run(main())
     except KeyboardInterrupt:
         print('Бот выключен')
