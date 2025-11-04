@@ -1,8 +1,10 @@
 import asyncio
+import os
 from aiogram import Bot, Dispatcher
 from app.handlers import router
 from aiogram.types import BotCommand
 from app.database.models import async_main
+from dotenv import load_dotenv
 
 
 async def set_bot_commands(bot: Bot):
@@ -13,9 +15,10 @@ async def set_bot_commands(bot: Bot):
 
 
 async def main():
+    load_dotenv()
     await async_main()
     # подключение бота
-    bot = Bot(token='8215499307:AAGDgFRBN_F8Tk8gw3v01AT-AMdBNUJgWzA')
+    bot = Bot(token=os.getenv('BOT_TOKEN'))
     dp = Dispatcher()  # обработчик
     await set_bot_commands(bot)
     dp.include_router(router)

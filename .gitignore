@@ -1,0 +1,25 @@
+# Environments
+.env
+.venv
+venv/
+venv.bak/
+.env.bak
+
+# databases
+*.sqlite3
+
+# Python
+*.py[cod]
+*.pyo
+*.pyd
+*~.py
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
+*.egg-info/
+.eggs/
+
+# IDEs
+.idea/
+.vscode/
