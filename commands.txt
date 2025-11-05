@@ -1,7 +1,0 @@
-python -m venv .venv
-.venv\Scripts\activate
-
-pip install aiogram # для работы с тг ботом
-pip install sqlalchemy aiosqlite # sqlalchemy - фреймворк SQLite, aiosqlite - асинхронно использовать субд
-pip install cryptography # инструменты для шифрования, дешифрования, создания хешей сообщений и генерации ключей
-pip list
