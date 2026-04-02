@@ -205,3 +205,39 @@ async def check_password_exists(user_id, site):
             )
         )
         return existing is not None
+
+# ========== ДЛЯ ЭКСПОРТА / ИМПОРТА ==========
+
+async def get_all_passwords(user_id: int):
+    return await get_passwords(user_id)  # переиспользует существующую функцию
+
+
+async def add_passwords_bulk(user_id: int, passwords_list: list):
+    async with async_session() as session:
+        # получает пользователя для получения tg_id и мастер-пароля
+        user = await session.scalar(select(User).where(User.id == user_id))
+        if not user:
+            raise ValueError("Пользователь не найден")
+        
+        master_password = auth_manager.get_master_password(user.tg_id)
+        if not master_password:
+            raise ValueError("Мастер-пароль не введён в текущей сессии")
+        
+        added = 0
+        for pwd_data in passwords_list:
+            # шифрует каждое поле
+            encrypted_site = cipher.encrypt(pwd_data['site'], user.tg_id, master_password)
+            encrypted_login = cipher.encrypt(pwd_data['login'], user.tg_id, master_password)
+            encrypted_password = cipher.encrypt(pwd_data['password'], user.tg_id, master_password)
+            
+            new_password = Password(
+                site=encrypted_site,
+                login=encrypted_login,
+                password=encrypted_password,
+                link=user_id
+            )
+            session.add(new_password)
+            added += 1
+        
+        await session.commit()
+        return added

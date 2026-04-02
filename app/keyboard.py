@@ -7,7 +7,9 @@ main_inline = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🔐 Мои пароли',
                           callback_data='show_passwords')],
     [InlineKeyboardButton(text='➕ Добавить пароль', callback_data='add_password'),
-     InlineKeyboardButton(text='🗑️ Удалить пароль', callback_data='delete_password')]
+     InlineKeyboardButton(text='🗑️ Удалить пароль', callback_data='delete_password')],
+     [InlineKeyboardButton(text="📤 Экспорт XML", callback_data="export_xml"),
+      InlineKeyboardButton(text="📥 Импорт XML",  callback_data="import_xml")],
 ])
 
 # Клавиатура для отмены действия
